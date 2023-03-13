@@ -1,6 +1,6 @@
 # Для запуска проекта Stocks-Products в Docker контейнере необходимо выполнить следующие шаги:
 ## Создание образа:
-docker build --tag=Some_image
+docker build . --tag=Some_image
 ## Запуск контейнера:
 docker run -d -p 7978:6060 --name=container_stocks_products Some_image
 ## Проверка работоспособности контейнера:
