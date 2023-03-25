@@ -1,61 +1,32 @@
 version: '3.9'
 
-volumes:
-  pgdata:
-
-networks:
-  backend:
-
 services:
-  stocks_app:
+  web:
     build: .
-    command:
-      - python3 manage.py runserver 0.0.0.0:6060
-    volumes:
-      - .:/src
-    ports:
-      - "8000:6060"
-    networks:
-      - backend
-    depends_on:
-      - postgredb
+    command: gunicorn stocks_products.wsgi:application --bind 0.0.0.0:8000
+    expose:
+      - 8000
 
-  postgredb:
-    image: postgres:latest
+    depends_on:
+      - db
+
+  db:
+    image: postgres:13.0-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
     environment:
-      - POSTGRES_DB=netology_stocks_products
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=Shambala
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d new_db"]
-      interval: 1m30s
-      timeout: 30s
-      retries: 5
-      start_period: 30s
-    restart: unless-stopped
-    volumes:
-      - ./logs:/var/log
-      - .:/docker-entrypoint-initdb.d
-      - pgdata:/var/lib/postgresql/data
-    networks:
-      - backend
+      - POSTGRES_DB=netology_stocks_products
 
-  pgadmin:
-    container_name: pgadm_container
-    image: dpage/pgadmin4:5.7
-    environment:
-      PGADMIN_DEFAULT_EMAIL: "wooftyaa@gmail.com"
-      PGADMIN_DEFAULT_PASSWORD: "Shambala"
-      PGADMIN_CONFIG_SERVER_MODE: "False"
-    volumes:
-      - ./pgadmin:/var/lib/pgadmin
+  nginx:
+    build: ./nginx
     ports:
-      - "5050:80"
-    restart: unless-stopped
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 1G
-    networks:
-      - backend
+      - 1337:80
+    depends_on:
+      - web
+    volumes:
+      - ./static:/static
+
+volumes:
+  postgres_data:
