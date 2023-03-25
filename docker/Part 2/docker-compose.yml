@@ -6,7 +6,8 @@ services:
     command: gunicorn stocks_products.wsgi:application --bind 0.0.0.0:8000
     expose:
       - 8000
-
+    networks:
+      - backend
     depends_on:
       - db
 
@@ -18,6 +19,8 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=Shambala
       - POSTGRES_DB=netology_stocks_products
+    networks:
+      - backend
 
   nginx:
     build: ./nginx
@@ -27,6 +30,11 @@ services:
       - web
     volumes:
       - ./static:/static
+    networks:
+      - backend
 
 volumes:
   postgres_data:
+
+networks:
+  backend:
